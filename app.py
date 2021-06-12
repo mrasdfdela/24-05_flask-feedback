@@ -23,22 +23,27 @@ def home_page():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = UserForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        email = form.email.data
-        first_name = form.first_name.data
-        last_name = form.last_name.data
+    try: 
+        if session['username']:
+            s_username = session['username']
+            return redirect(f'/users/{s_username}')
+    except:
+        form = UserForm()
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
+            email = form.email.data
+            first_name = form.first_name.data
+            last_name = form.last_name.data
 
-        new_user = User.register(username, password, email, first_name, last_name)
-        db.session.add(new_user)
-        db.session.commit()
+            new_user = User.register(username, password, email, first_name, last_name)
+            db.session.add(new_user)
+            db.session.commit()
 
-        session['username'] = new_user.username
-        return redirect(f'/users/{new_user.username}')
-    else:
-        return render_template('/register.html', form=form)
+            session['username'] = new_user.username
+            return redirect(f'/users/{new_user.username}')
+        else:
+            return render_template('/register.html', form=form)
 
 # @app.route('/secret')
 # def secret_site():
@@ -50,19 +55,24 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = UserForm()
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        u = User.authenticate(username, password)
+    try:
+      if session['username']:
+          s_username = session['username']
+          return redirect(f'/users/{s_username}')
+    except:
+        form = UserForm()
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
+            u = User.authenticate(username, password)
 
-        if u:
-            session['username'] = u.username
-            return redirect('/secret')
+            if u:
+                session['username'] = u.username
+                return redirect('/secret')
+            else:
+                form.username.errors = ['Invalid username/password']
         else:
-            form.username.errors = ['Invalid username/password']
-    else:
-        return render_template('/login.html', form=form)
+            return render_template('/login.html', form=form)
 
 @app.route('/logout', methods=['GET'])
 def logout():
@@ -125,3 +135,7 @@ def delete_feedback(feedback_id):
         Feedback.query.filter_by(id=feedback.id).delete()
         db.session.commit()
     return redirect(f'/users/{feedback.username}')
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html")
