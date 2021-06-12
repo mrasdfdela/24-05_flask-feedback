@@ -15,7 +15,7 @@ toolbar = DebugToolbarExtension(app)
 
 @app.route('/')
 def home_page():
-    return redirect('/register')
+  return redirect('/register')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -31,14 +31,18 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        session['user_id'] = new_user.id
+        session['username'] = new_user.username
         return redirect('/secret')
     else:
         return render_template('/register.html', form=form)
 
 @app.route('/secret')
 def secret_site():
-    return render_template('/secret.html')
+    try:
+        if session['username']:
+            return render_template('/secret.html')
+    except:
+        return redirect('/login')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,9 +53,23 @@ def login():
         u = User.authenticate(username, password)
 
         if u:
-            session['user_id'] = u.username
+            session['username'] = u.username
             return redirect('/secret')
         else:
             form.username.errors = ['Invalid username/password']
     else:
         return render_template('/login.html', form=form)
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.pop('username')
+    return redirect('/')
+
+@app.route('/users/<username>', methods=['GET'])
+def user(username):
+    s_username = session['username']
+    if username == s_username:
+        user = User.query.get_or_404(username)
+        return render_template('/user.html', user=user)
+    else:
+        return redirect(f'/users/{s_username}')
