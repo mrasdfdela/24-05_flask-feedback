@@ -9,7 +9,7 @@ def connect_db(app):
     db.init_app(app)
 
 class User(db.Model):
-
+    """ users """
     __tablename__ = 'users'
 
     username = db.Column(db.String(50), primary_key=True, unique=True)
@@ -32,3 +32,15 @@ class User(db.Model):
             return u
         else:
             return False
+
+class Feedback(db.Model):
+    """ feedback that associated users have given """
+    __tablename__ = 'feedback'
+
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
+
+    title = db.Column(db.String(100), unique=True)
+    content = db.Column(db.Text, nullable=False)
+    username = db.Column(db.String(20), db.ForeignKey('users.username'))
+
+    user = db.relationship('User', cascade='all,delete', backref='feedback')

@@ -2,11 +2,35 @@
 
 {% block content %}
 <div class="container">
-  <ul>
-    <li>User: {{ user.username }}</li>
-    <li>Email: {{ user.email }}</li>
+  <div>
+    <h3>User Details</h3>
+    <ul>
+      <li>User: {{ user.username }}</li>
+      <li>Email: {{ user.email }}</li>
     <li>First Name: {{ user.first_name }}</li>
     <li>Last Name: {{ user.last_name }}</li>
-  </ul>
+    </ul>
+    <form action='/users/{{user.username}}/delete' method='POST'>
+      <a href='/users/{{user.username}}/feedback/add' class='btn btn-primary'>Add Feedback</a>
+      <button class='btn btn-danger'>Delete User</button>
+    </form>
+  </div>
+  <div class='mt-4'>
+    <h3>User Feedback</h3>
+    <ul>
+      {% for feedback in user.feedback %}
+      <div>
+        <div class="card">
+          <h4 class="card-title text-info">Title: {{ feedback.title }}</h4>
+          <p class="card-text">Feedback: {{ feedback.content }}</p>
+          <form action='/feedback/{{feedback.id}}/delete' method='POST'>
+            <a class='btn btn-primary' href='/feedback/{{feedback.id}}/update'>Update</a>
+            <button class='btn btn-danger'>Delete</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </ul>
+  </div>
 </div>
 {% endblock %}
